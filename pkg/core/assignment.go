@@ -90,7 +90,7 @@ func (p *AssignmentProblem) Solve() error {
 		p.numReplicas[i] = make([]int, p.numAccelerators)
 		v0 := i * p.numAccelerators // begin index
 		for j := 0; j < p.numAccelerators; j++ {
-			p.numReplicas[i][j] = int(math.Ceil(vars[v0+j]) * (p.arrivalRates[i] / p.ratePerReplica[i][j]))
+			p.numReplicas[i][j] = int(vars[v0+j] * math.Ceil(p.arrivalRates[i]/p.ratePerReplica[i][j]))
 		}
 	}
 
