@@ -16,14 +16,17 @@ type MIPProblem struct {
 	ratePerReplica     [][]float64 // max arrival rate for pairs of server and accelerator [numServers][numAccelerators]
 	arrivalRates       []float64   // arrival rates to servers [numServers]
 
-	isLimited  bool  // solution limited to the available number of accelerator units
-	unitsAvail []int // available number of accelerators [numAccelerators]
-
 	solutionType     golp.SolutionType
 	solutionTimeMsec int64
 	objectiveValue   float64 // value of objective function
 	numReplicas      [][]int // resulting number of replicas for pairs of server and accelerator [numServers][numAccelerators]
 	unitsUsed        []int   // number of used accelerator units [numAccelerators]
+
+	isLimited              bool // solution limited to the available number of accelerator units
+	numAcceleratorTypes    int
+	acceleratorTypesMatrix [][]int // 0-1 matrix [numAcceleratorTypes][numAccelerators]
+	unitsAvailByType       []int   // available number of accelerators [numAcceleratorTypes]
+	unitsUsedByType        []int   // number of used units of accelerator types [numAcceleratorTypes]
 
 	lp *golp.LP // problem model
 }
@@ -49,12 +52,15 @@ func CreateMIPProblemInstance(numServers int, numAccelerators int, unitCost []fl
 }
 
 // set limited accelerator units option
-func (p *MIPProblem) SetLimited(unitsAvail []int) error {
-	if len(unitsAvail) != p.numAccelerators {
+func (p *MIPProblem) SetLimited(numAcceleratorTypes int, unitsAvail []int, acceleratorTypesMatrix [][]int) error {
+	if len(unitsAvail) != numAcceleratorTypes || len(acceleratorTypesMatrix) != numAcceleratorTypes ||
+		len(acceleratorTypesMatrix[0]) != p.numAccelerators {
 		return errors.New("inconsistent dimension")
 	}
 	p.isLimited = true
-	p.unitsAvail = unitsAvail
+	p.numAcceleratorTypes = numAcceleratorTypes
+	p.unitsAvailByType = unitsAvail
+	p.acceleratorTypesMatrix = acceleratorTypesMatrix
 	return nil
 }
 
@@ -96,14 +102,18 @@ func (p *MIPProblem) setup() {
 
 	// set count limit constraints
 	if p.isLimited {
-		for j := 0; j < p.numAccelerators; j++ {
+		for k := 0; k < p.numAcceleratorTypes; k++ {
 			countVector := make([]float64, numVars)
 			for i := 0; i < p.numServers; i++ {
-				v0 := i * p.numAccelerators // begin index
-				countVector[v0+j] = float64(p.numUnitsPerReplica[i][j])
+				for j := 0; j < p.numAccelerators; j++ {
+					if p.acceleratorTypesMatrix[k][j] == 1 {
+						idx := i*p.numAccelerators + j
+						countVector[idx] = float64(p.numUnitsPerReplica[i][k])
+					}
+				}
 			}
-			p.lp.AddConstraint(countVector, golp.LE, float64(p.unitsAvail[j]))
-			// fmt.Printf("j=%d; %s; avail=%d\n", j, utils.Pretty1DFloat64("countVector", countVector), p.unitsAvail[j])
+			p.lp.AddConstraint(countVector, golp.LE, float64(p.unitsAvailByType[k]))
+			// fmt.Printf("k=%d; %s; avail=%d\n", k, utils.Pretty1DFloat64("countVector", countVector), p.unitsAvailByType[k])
 		}
 	}
 }
@@ -139,6 +149,16 @@ func (p *MIPProblem) Solve() error {
 			p.unitsUsed[j] += p.numReplicas[i][j] * p.numUnitsPerReplica[i][j]
 		}
 	}
+
+	// calculate number of used accelerator units
+	p.unitsUsedByType = make([]int, p.numAcceleratorTypes)
+	for k := 0; k < p.numAcceleratorTypes; k++ {
+		for j := 0; j < p.numAccelerators; j++ {
+			if p.acceleratorTypesMatrix[k][j] == 1 {
+				p.unitsUsedByType[k] += p.unitsUsed[j]
+			}
+		}
+	}
 	return nil
 }
 
@@ -160,4 +180,8 @@ func (p *MIPProblem) GetNumReplicas() [][]int {
 
 func (p *MIPProblem) GetUnitsUsed() []int {
 	return p.unitsUsed
+}
+
+func (p *MIPProblem) GetUnitsUsedByType() []int {
+	return p.unitsUsedByType
 }

@@ -9,19 +9,27 @@ import (
 
 var numServers int
 var numAccelerators int
-var unitsAvail []int
-var unitCost []float64
-var numUnitsPerReplica [][]int
-var ratePerReplica [][]float64
-var arrivalRates []float64
+var unitCost []float64         // [numAccelerators]
+var numUnitsPerReplica [][]int // [numServers][numAccelerators]
+var ratePerReplica [][]float64 // [numServers][numAccelerators]
+var arrivalRates []float64     // [numServers]
+
+var numAcceleratorTypes int
+var unitsAvailByType []int         // [numAcceleratorTypes]
+var acceleratorTypesMatrix [][]int // [numAcceleratorTypes][numAccelerators]
 
 func main() {
 	numServers = 5
 	numAccelerators = 8
+	numAcceleratorTypes = 8
 
-	// available number of accelerators (numAccelerators)
-	// unitsAvail = []int{256, 128, 96, 64, 48, 32, 24, 16}
-	unitsAvail = []int{512, 256, 192, 128, 98, 64, 48, 32}
+	// available number of units of accelerator types (numAcceleratorTypes)
+	unitsAvailByType = []int{512, 256, 192, 128, 98, 64, 48, 32}
+	acceleratorTypesMatrix = make([][]int, numAcceleratorTypes)
+	for i := 0; i < numAcceleratorTypes; i++ {
+		acceleratorTypesMatrix[i] = make([]int, numAccelerators)
+		acceleratorTypesMatrix[i][i] = 1
+	}
 
 	// unit cost of accelerators (numAccelerators)
 	unitCost = []float64{0.5, 1.0, 1.2, 2.3, 2.7, 5.6, 7.0, 10.0}
@@ -74,8 +82,10 @@ func optimize(isLimited bool) {
 
 	// set acccelerator count limited option
 	if isLimited {
-		mip.SetLimited(unitsAvail)
-		fmt.Println(utils.Pretty1DInt("unitsAvail", unitsAvail))
+		if err := mip.SetLimited(numAcceleratorTypes, unitsAvailByType, acceleratorTypesMatrix); err != nil {
+			fmt.Println(err.Error())
+			return
+		}
 	} else {
 		mip.UnSetLimited()
 	}
@@ -96,4 +106,10 @@ func optimize(isLimited bool) {
 
 	unitsUsed := mip.GetUnitsUsed()
 	fmt.Println(utils.Pretty1DInt("unitsUsed", unitsUsed))
+
+	if isLimited {
+		fmt.Println(utils.Pretty1DInt("unitsAvailByType", unitsAvailByType))
+		unitsUsedByType := mip.GetUnitsUsedByType()
+		fmt.Println(utils.Pretty1DInt("unitsUsedByType", unitsUsedByType))
+	}
 }

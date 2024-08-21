@@ -73,13 +73,17 @@ func (p *AssignmentProblem) setup() {
 
 	// set count limit constraints
 	if p.isLimited {
-		for j := 0; j < p.numAccelerators; j++ {
+		for k := 0; k < p.numAcceleratorTypes; k++ {
 			countVector := make([]float64, numVars)
 			for i := 0; i < p.numServers; i++ {
-				v0 := i * p.numAccelerators // begin index
-				countVector[v0+j] = float64(p.numUnitsPerReplica[i][j]) * p.maxNumReplicas[i][j]
+				for j := 0; j < p.numAccelerators; j++ {
+					if p.acceleratorTypesMatrix[k][j] == 1 {
+						idx := i*p.numAccelerators + j
+						countVector[idx] = float64(p.numUnitsPerReplica[i][k]) * p.maxNumReplicas[i][k]
+					}
+				}
 			}
-			p.lp.AddConstraint(countVector, golp.LE, float64(p.unitsAvail[j]))
+			p.lp.AddConstraint(countVector, golp.LE, float64(p.unitsAvailByType[k]))
 			// fmt.Printf("j=%d; %s; avail=%d\n", j, utils.Pretty1DFloat64("countVector", countVector), p.unitsAvail[j])
 		}
 	}
@@ -114,6 +118,16 @@ func (p *AssignmentProblem) Solve() error {
 	for i := 0; i < p.numServers; i++ {
 		for j := 0; j < p.numAccelerators; j++ {
 			p.unitsUsed[j] += p.numReplicas[i][j] * p.numUnitsPerReplica[i][j]
+		}
+	}
+
+	// calculate number of used accelerator units
+	p.unitsUsedByType = make([]int, p.numAcceleratorTypes)
+	for k := 0; k < p.numAcceleratorTypes; k++ {
+		for j := 0; j < p.numAccelerators; j++ {
+			if p.acceleratorTypesMatrix[k][j] == 1 {
+				p.unitsUsedByType[k] += p.unitsUsed[j]
+			}
 		}
 	}
 	return nil
