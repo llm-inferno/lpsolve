@@ -5,12 +5,15 @@ import (
 	"time"
 
 	"github.com/draffensperger/golp"
+	"github.ibm.com/tantawi/lpsolve/pkg/utils"
 )
 
 // A special MIP problem with binary variables
 //   - assign one accelerator type to a server
 type AssignmentProblem struct {
 	MIPProblem
+
+	maxNumReplicas [][]float64 // calculated maximum number of replicas for pairs of server and accelerator [numServers][numAccelerators]
 }
 
 // create an instance of an assignment problem
@@ -33,13 +36,25 @@ func (p *AssignmentProblem) setup() {
 		p.lp.SetBinary(k, true)
 	}
 
+	// calculate max number of replicas
+	p.maxNumReplicas = make([][]float64, p.numServers)
+	for i := 0; i < p.numServers; i++ {
+		p.maxNumReplicas[i] = make([]float64, p.numAccelerators)
+		for j := 0; j < p.numAccelerators; j++ {
+			if p.ratePerReplica[i][j] > 0 {
+				p.maxNumReplicas[i][j] = math.Ceil(p.arrivalRates[i] / p.ratePerReplica[i][j])
+			} else {
+				p.maxNumReplicas[i][j] = utils.LargeNumber
+			}
+		}
+	}
+
 	// set objective function: cost coefficients
 	costVector := make([]float64, numVars)
 	for i := 0; i < p.numServers; i++ {
 		v0 := i * p.numAccelerators // begin index
 		for j := 0; j < p.numAccelerators; j++ {
-			costVector[v0+j] = float64(p.numUnitsPerReplica[i][j]) * p.unitCost[j] *
-				math.Ceil(p.arrivalRates[i]/p.ratePerReplica[i][j])
+			costVector[v0+j] = float64(p.numUnitsPerReplica[i][j]) * p.unitCost[j] * p.maxNumReplicas[i][j]
 		}
 	}
 	p.lp.SetObjFn(costVector)
@@ -62,7 +77,7 @@ func (p *AssignmentProblem) setup() {
 			countVector := make([]float64, numVars)
 			for i := 0; i < p.numServers; i++ {
 				v0 := i * p.numAccelerators // begin index
-				countVector[v0+j] = float64(p.numUnitsPerReplica[i][j]) * math.Ceil(p.arrivalRates[i]/p.ratePerReplica[i][j])
+				countVector[v0+j] = float64(p.numUnitsPerReplica[i][j]) * p.maxNumReplicas[i][j]
 			}
 			p.lp.AddConstraint(countVector, golp.LE, float64(p.unitsAvail[j]))
 			// fmt.Printf("j=%d; %s; avail=%d\n", j, utils.Pretty1DFloat64("countVector", countVector), p.unitsAvail[j])
@@ -90,7 +105,7 @@ func (p *AssignmentProblem) Solve() error {
 		p.numReplicas[i] = make([]int, p.numAccelerators)
 		v0 := i * p.numAccelerators // begin index
 		for j := 0; j < p.numAccelerators; j++ {
-			p.numReplicas[i][j] = int(vars[v0+j] * math.Ceil(p.arrivalRates[i]/p.ratePerReplica[i][j]))
+			p.numReplicas[i][j] = int(vars[v0+j] * p.maxNumReplicas[i][j])
 		}
 	}
 

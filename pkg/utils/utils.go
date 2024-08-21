@@ -5,6 +5,8 @@ import (
 	"fmt"
 )
 
+const LargeNumber float64 = 1e+12
+
 func Pretty1DInt(name string, x []int) string {
 	n := len(x)
 	var b bytes.Buffer
