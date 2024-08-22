@@ -2,23 +2,18 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.ibm.com/tantawi/lpsolve/pkg/core"
-	"github.ibm.com/tantawi/lpsolve/pkg/utils"
 )
 
-var numServers int
-var numAccelerators int
-var unitCost []float64         // [numAccelerators]
-var numUnitsPerReplica [][]int // [numServers][numAccelerators]
-var ratePerReplica [][]float64 // [numServers][numAccelerators]
-var arrivalRates []float64     // [numServers]
-
-var numAcceleratorTypes int
-var unitsAvailByType []int         // [numAcceleratorTypes]
-var acceleratorTypesMatrix [][]int // [numAcceleratorTypes][numAccelerators]
-
 func main() {
+	// get problem type argument, or use default
+	problemType := core.MULTI
+	if len(os.Args) > 1 {
+		problemType = core.GetProblemType(os.Args[1])
+	}
+
 	numServers = 5
 	numAccelerators = 8
 	numAcceleratorTypes = 8
@@ -57,59 +52,18 @@ func main() {
 	// arrival rates to servers
 	arrivalRates = []float64{10, 20, 30, 40, 50}
 
+	fmt.Printf("Problem type: %v\n", problemType)
+	fmt.Println()
+
 	// unlimited case
 	fmt.Println("Solution of Unlimited case:")
 	fmt.Println("---------------------------")
-	optimize(false)
+	Optimize(problemType, false)
 	fmt.Println()
 
 	//limited case
 	fmt.Println("Solution of Limited case:")
 	fmt.Println("-------------------------")
-	optimize(true)
+	Optimize(problemType, true)
 	fmt.Println()
-}
-
-func optimize(isLimited bool) {
-	// create a new MIP problem instance
-	mip, err := core.CreateMIPProblemInstance(numServers, numAccelerators, unitCost, numUnitsPerReplica,
-		ratePerReplica, arrivalRates)
-
-	if err != nil {
-		fmt.Println(err.Error())
-		return
-	}
-
-	// set acccelerator count limited option
-	if isLimited {
-		if err := mip.SetLimited(numAcceleratorTypes, unitsAvailByType, acceleratorTypesMatrix); err != nil {
-			fmt.Println(err.Error())
-			return
-		}
-	} else {
-		mip.UnSetLimited()
-	}
-
-	// solve the problem
-	if err = mip.Solve(); err != nil {
-		fmt.Println(err.Error())
-		return
-	}
-
-	// print solution details
-	fmt.Printf("Solution type: %v\n", mip.GetSolutionType())
-	fmt.Printf("Solution time: %d msec\n", mip.GetSolutionTimeMsec())
-	fmt.Printf("Objective value: %v\n", mip.GetObjectiveValue())
-
-	numReplicas := mip.GetNumReplicas()
-	fmt.Println(utils.Pretty2DInt("numReplicas", numReplicas))
-
-	unitsUsed := mip.GetUnitsUsed()
-	fmt.Println(utils.Pretty1DInt("unitsUsed", unitsUsed))
-
-	if isLimited {
-		fmt.Println(utils.Pretty1DInt("unitsAvailByType", unitsAvailByType))
-		unitsUsedByType := mip.GetUnitsUsedByType()
-		fmt.Println(utils.Pretty1DInt("unitsUsedByType", unitsUsedByType))
-	}
 }
