@@ -4,21 +4,21 @@ package core
 type ProblemType int
 
 const (
-	MULTI ProblemType = iota
-	ASSIGN
+	SINGLE ProblemType = iota // a single kind of accelerator to a server
+	MULTI                     // multiple kinds of accelerators to a server
 	UNKNOWN
 )
 
 func (pt ProblemType) String() string {
-	return [...]string{"MULTI", "ASSIGN", "UNKNOWN"}[pt]
+	return [...]string{"SINGLE", "MULTI", "UNKNOWN"}[pt]
 }
 
 func GetProblemType(s string) ProblemType {
 	switch s {
+	case "SINGLE":
+		return SINGLE
 	case "MULTI":
 		return MULTI
-	case "ASSIGN":
-		return ASSIGN
 	default:
 		return UNKNOWN
 	}

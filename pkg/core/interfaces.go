@@ -2,8 +2,9 @@ package core
 
 import "github.com/draffensperger/golp"
 
-// interface to optimization problem
+// interface to an optimization problem
 type Problem interface {
+	// accelerator types are limited
 	SetLimited(numAcceleratorTypes int, unitsAvail []int, acceleratorTypesMatrix [][]int) error
 	UnSetLimited()
 
@@ -14,6 +15,8 @@ type Problem interface {
 	GetUnitsUsed() []int
 	GetUnitsUsedByType() []int
 
+	// pre-solve setup
 	Setup()
+	// solve problem
 	Solve() error
 }

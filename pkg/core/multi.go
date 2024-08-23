@@ -7,28 +7,28 @@ import (
 	"github.com/draffensperger/golp"
 )
 
-// MIP problem with potential multiple accelerator types assigned to a server
-type MIPProblem struct {
+// MILP problem with potential multiple kinds of accelerators assigned to a server
+type MultiAssignProblem struct {
 	BaseProblem
 }
 
-// create an instance of MIP problem
-func CreateMIPProblem(numServers int, numAccelerators int, unitCost []float64, numUnitsPerReplica [][]int,
-	ratePerReplica [][]float64, arrivalRates []float64) (*MIPProblem, error) {
+// create an instance of the problem
+func CreateMultiAssignProblem(numServers int, numAccelerators int, unitCost []float64, numUnitsPerReplica [][]int,
+	ratePerReplica [][]float64, arrivalRates []float64) (*MultiAssignProblem, error) {
 	bp, err := CreateBaseProblem(numServers, numAccelerators, unitCost, numUnitsPerReplica,
 		ratePerReplica, arrivalRates)
 	if err != nil {
 		return nil, err
 	}
-	mip := &MIPProblem{
+	p := &MultiAssignProblem{
 		BaseProblem: *bp}
-	mip.BaseProblem.Setup = mip.Setup
-	mip.BaseProblem.Solve = mip.Solve
-	return mip, nil
+	p.BaseProblem.Setup = p.Setup
+	p.BaseProblem.Solve = p.Solve
+	return p, nil
 }
 
 // setup constraints and objective function
-func (p *MIPProblem) Setup() {
+func (p *MultiAssignProblem) Setup() {
 	// define LP problem
 	numVars := p.numServers * p.numAccelerators
 	p.lp = golp.NewLP(0, numVars)
@@ -47,12 +47,18 @@ func (p *MIPProblem) Setup() {
 	p.lp.SetObjFn(costVector)
 	// fmt.Println(utils.Pretty1DFloat64("costVector", costVector))
 
+	// excluded infeasible variables (for a given server accelerator pair)
+	excluded := make([]float64, numVars)
+
 	// set rate constraints: rate coefficients
 	for i := 0; i < p.numServers; i++ {
 		rateVector := make([]float64, numVars)
 		v0 := i * p.numAccelerators // begin index
 		for j := 0; j < p.numAccelerators; j++ {
 			rateVector[v0+j] = p.ratePerReplica[i][j]
+			if p.ratePerReplica[i][j] == 0 {
+				excluded[v0+j] = 1
+			}
 		}
 		p.lp.AddConstraint(rateVector, golp.GE, p.arrivalRates[i])
 		// fmt.Printf("i=%d; %s; arrv=%v\n", i, utils.Pretty1DFloat64("rateVector", rateVector), p.arrivalRates[i])
@@ -66,7 +72,7 @@ func (p *MIPProblem) Setup() {
 				for j := 0; j < p.numAccelerators; j++ {
 					if p.acceleratorTypesMatrix[k][j] == 1 {
 						idx := i*p.numAccelerators + j
-						countVector[idx] = float64(p.numUnitsPerReplica[i][k])
+						countVector[idx] = float64(p.numUnitsPerReplica[i][j])
 					}
 				}
 			}
@@ -74,10 +80,13 @@ func (p *MIPProblem) Setup() {
 			// fmt.Printf("k=%d; %s; avail=%d\n", k, utils.Pretty1DFloat64("countVector", countVector), p.unitsAvailByType[k])
 		}
 	}
+
+	p.lp.AddConstraint(excluded, golp.EQ, 0)
+	// fmt.Println(utils.Pretty1DFloat64("excluded", excluded))
 }
 
 // solve problem
-func (p *MIPProblem) Solve() error {
+func (p *MultiAssignProblem) Solve() error {
 	p.Setup()
 
 	//lp.SetVerboseLevel(golp.DETAILED)
@@ -90,20 +99,14 @@ func (p *MIPProblem) Solve() error {
 	p.objectiveValue = p.lp.Objective()
 	vars := p.lp.Variables()
 
-	// obtain number of replicas for pairs of server and accelerator
+	// obtain number of replicas and number of used accelerator units
 	p.numReplicas = make([][]int, p.numServers)
+	p.unitsUsed = make([]int, p.numAccelerators)
 	for i := 0; i < p.numServers; i++ {
 		p.numReplicas[i] = make([]int, p.numAccelerators)
 		v0 := i * p.numAccelerators // begin index
 		for j := 0; j < p.numAccelerators; j++ {
 			p.numReplicas[i][j] = int(math.Round(vars[v0+j]))
-		}
-	}
-
-	// calculate number of used accelerator units
-	p.unitsUsed = make([]int, p.numAccelerators)
-	for i := 0; i < p.numServers; i++ {
-		for j := 0; j < p.numAccelerators; j++ {
 			p.unitsUsed[j] += p.numReplicas[i][j] * p.numUnitsPerReplica[i][j]
 		}
 	}

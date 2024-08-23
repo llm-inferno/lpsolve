@@ -20,56 +20,55 @@ var acceleratorTypesMatrix [][]int // [numAcceleratorTypes][numAccelerators]
 
 // create problem instance, solve it, and print results
 func Optimize(problemType core.ProblemType, isLimited bool) {
-	var mip core.Problem
+	var p core.Problem
 	var err error
 	// create a new problem instance
 	switch problemType {
-	case core.MULTI:
-		mip, err = core.CreateMIPProblem(numServers, numAccelerators, unitCost, numUnitsPerReplica,
+	case core.SINGLE:
+		p, err = core.CreateSingleAssignProblem(numServers, numAccelerators, unitCost, numUnitsPerReplica,
 			ratePerReplica, arrivalRates)
-	case core.ASSIGN:
-		mip, err = core.CreateAssignmentProblem(numServers, numAccelerators, unitCost, numUnitsPerReplica,
+	case core.MULTI:
+		p, err = core.CreateMultiAssignProblem(numServers, numAccelerators, unitCost, numUnitsPerReplica,
 			ratePerReplica, arrivalRates)
 	default:
 		fmt.Printf("Unknown problem type: %s", problemType)
 		return
 	}
-
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
 
-	// set acccelerator count limited option
+	// set accelerator count limited option
 	if isLimited {
-		if err := mip.SetLimited(numAcceleratorTypes, unitsAvailByType, acceleratorTypesMatrix); err != nil {
+		if err := p.SetLimited(numAcceleratorTypes, unitsAvailByType, acceleratorTypesMatrix); err != nil {
 			fmt.Println(err.Error())
 			return
 		}
 	} else {
-		mip.UnSetLimited()
+		p.UnSetLimited()
 	}
 
 	// solve the problem
-	if err = mip.Solve(); err != nil {
+	if err = p.Solve(); err != nil {
 		fmt.Println(err.Error())
 		return
 	}
 
 	// print solution details
-	fmt.Printf("Solution type: %v\n", mip.GetSolutionType())
-	fmt.Printf("Solution time: %d msec\n", mip.GetSolutionTimeMsec())
-	fmt.Printf("Objective value: %v\n", mip.GetObjectiveValue())
+	fmt.Printf("Solution type: %v\n", p.GetSolutionType())
+	fmt.Printf("Solution time: %d msec\n", p.GetSolutionTimeMsec())
+	fmt.Printf("Objective value: %v\n", p.GetObjectiveValue())
 
-	numReplicas := mip.GetNumReplicas()
+	numReplicas := p.GetNumReplicas()
 	fmt.Println(utils.Pretty2DInt("numReplicas", numReplicas))
 
-	unitsUsed := mip.GetUnitsUsed()
+	unitsUsed := p.GetUnitsUsed()
 	fmt.Println(utils.Pretty1DInt("unitsUsed", unitsUsed))
 
 	if isLimited {
 		fmt.Println(utils.Pretty1DInt("unitsAvailByType", unitsAvailByType))
-		unitsUsedByType := mip.GetUnitsUsedByType()
+		unitsUsedByType := p.GetUnitsUsedByType()
 		fmt.Println(utils.Pretty1DInt("unitsUsedByType", unitsUsedByType))
 	}
 }

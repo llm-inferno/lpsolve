@@ -10,26 +10,26 @@ type BaseProblem struct {
 	numServers         int
 	numAccelerators    int
 	unitCost           []float64   // unit cost of accelerators [numAccelerators]
-	numUnitsPerReplica [][]int     // number of accelerator units for pairs of server and accelerator [numServers][numAccelerators]
-	ratePerReplica     [][]float64 // max arrival rate for pairs of server and accelerator [numServers][numAccelerators]
+	numUnitsPerReplica [][]int     // number of accelerator units [numServers][numAccelerators]
+	ratePerReplica     [][]float64 // max arrival rate to attain SLOs [numServers][numAccelerators]
 	arrivalRates       []float64   // arrival rates to servers [numServers]
+	isLimited          bool        // solution limited to the available number of accelerator types
 
 	solutionType     golp.SolutionType
 	solutionTimeMsec int64
 	objectiveValue   float64 // value of objective function
-	numReplicas      [][]int // resulting number of replicas for pairs of server and accelerator [numServers][numAccelerators]
+	numReplicas      [][]int // resulting number of replicas [numServers][numAccelerators]
 	unitsUsed        []int   // number of used accelerator units [numAccelerators]
 
-	isLimited              bool // solution limited to the available number of accelerator units
 	numAcceleratorTypes    int
 	acceleratorTypesMatrix [][]int // 0-1 matrix [numAcceleratorTypes][numAccelerators]
 	unitsAvailByType       []int   // available number of accelerators [numAcceleratorTypes]
 	unitsUsedByType        []int   // number of used units of accelerator types [numAcceleratorTypes]
 
-	lp *golp.LP // problem model
+	lp *golp.LP // lp_solve problem model
 
-	Setup func()
-	Solve func() error
+	Setup func()       // pre-solve setup
+	Solve func() error // solve problem
 }
 
 // create an instance of base problem
@@ -53,19 +53,19 @@ func CreateBaseProblem(numServers int, numAccelerators int, unitCost []float64, 
 }
 
 // set limited accelerator units option
-func (p *BaseProblem) SetLimited(numAcceleratorTypes int, unitsAvail []int, acceleratorTypesMatrix [][]int) error {
-	if len(unitsAvail) != numAcceleratorTypes || len(acceleratorTypesMatrix) != numAcceleratorTypes ||
+func (p *BaseProblem) SetLimited(numAcceleratorTypes int, unitsAvailByType []int, acceleratorTypesMatrix [][]int) error {
+	if len(unitsAvailByType) != numAcceleratorTypes || len(acceleratorTypesMatrix) != numAcceleratorTypes ||
 		len(acceleratorTypesMatrix[0]) != p.numAccelerators {
 		return errors.New("inconsistent dimension")
 	}
 	p.isLimited = true
 	p.numAcceleratorTypes = numAcceleratorTypes
-	p.unitsAvailByType = unitsAvail
+	p.unitsAvailByType = unitsAvailByType
 	p.acceleratorTypesMatrix = acceleratorTypesMatrix
 	return nil
 }
 
-// unset limited accelerator units option
+// unset limited accelerator types option
 func (p *BaseProblem) UnSetLimited() {
 	p.isLimited = false
 }

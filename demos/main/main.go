@@ -9,7 +9,7 @@ import (
 
 func main() {
 	// get problem type argument, or use default
-	problemType := core.MULTI
+	problemType := core.SINGLE
 	if len(os.Args) > 1 {
 		problemType = core.GetProblemType(os.Args[1])
 	}
@@ -23,7 +23,7 @@ func main() {
 	acceleratorTypesMatrix = make([][]int, numAcceleratorTypes)
 	for i := 0; i < numAcceleratorTypes; i++ {
 		acceleratorTypesMatrix[i] = make([]int, numAccelerators)
-		acceleratorTypesMatrix[i][i] = 1
+		acceleratorTypesMatrix[i][i] = 1 // one type per accelerator
 	}
 
 	// unit cost of accelerators (numAccelerators)
@@ -42,10 +42,10 @@ func main() {
 	// max arrival rate for pairs of server and accelerator
 	//	(numServers x numAccelerators)
 	ratePerReplica = [][]float64{
+		{0.1, 0.2, 0.4, 0.6, 0.0, 1.4, 2.0, 3.2},
+		{0.1, 0.2, 0.4, 0.0, 0.0, 1.4, 2.0, 3.2},
 		{0.1, 0.2, 0.4, 0.6, 0.9, 1.4, 2.0, 3.2},
-		{0.1, 0.2, 0.4, 0.6, 0.9, 1.4, 2.0, 3.2},
-		{0.1, 0.2, 0.4, 0.6, 0.9, 1.4, 2.0, 3.2},
-		{0.1, 0.2, 0.4, 0.6, 0.9, 1.4, 2.0, 3.2},
+		{0.1, 0.2, 0.4, 0.6, 0.0, 0.0, 2.0, 3.2},
 		{0.1, 0.2, 0.4, 0.6, 0.9, 1.4, 2.0, 3.2},
 	}
 
