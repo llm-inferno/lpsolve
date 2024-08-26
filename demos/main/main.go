@@ -19,19 +19,19 @@ func main() {
 	numAcceleratorTypes = 8
 
 	// available number of units of accelerator types (numAcceleratorTypes)
-	unitsAvailByType = []int{512, 256, 192, 128, 98, 64, 48, 32}
+	unitsAvail = []int{512, 256, 192, 128, 98, 64, 48, 32}
 	acceleratorTypesMatrix = make([][]int, numAcceleratorTypes)
 	for i := 0; i < numAcceleratorTypes; i++ {
 		acceleratorTypesMatrix[i] = make([]int, numAccelerators)
 		acceleratorTypesMatrix[i][i] = 1 // one type per accelerator
 	}
 
-	// unit cost of accelerators (numAccelerators)
-	unitCost = []float64{0.5, 1.0, 1.2, 2.3, 2.7, 5.6, 7.0, 10.0}
+	// instance cost of accelerators (numAccelerators)
+	instanceCost = []float64{0.5, 1.0, 1.2, 2.3, 2.7, 5.6, 7.0, 10.0}
 
-	// number of accelerator units for pairs of server and accelerator
+	// number of accelerator instances for pairs of server and accelerator
 	//	(numServers x numAccelerators)
-	numUnitsPerReplica = [][]int{
+	numInstancesPerReplica = [][]int{
 		{3, 2, 2, 2, 1, 1, 1, 1},
 		{4, 3, 3, 2, 2, 1, 1, 1},
 		{5, 4, 3, 2, 2, 2, 1, 1},

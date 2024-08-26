@@ -12,8 +12,8 @@ type Problem interface {
 	GetSolutionTimeMsec() int64
 	GetObjectiveValue() float64
 	GetNumReplicas() [][]int
+	GetInstancesUsed() []int
 	GetUnitsUsed() []int
-	GetUnitsUsedByType() []int
 
 	// pre-solve setup
 	Setup()

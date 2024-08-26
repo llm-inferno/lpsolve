@@ -9,13 +9,13 @@ import (
 
 var numServers int
 var numAccelerators int
-var unitCost []float64         // [numAccelerators]
-var numUnitsPerReplica [][]int // [numServers][numAccelerators]
-var ratePerReplica [][]float64 // [numServers][numAccelerators]
-var arrivalRates []float64     // [numServers]
+var instanceCost []float64         // [numAccelerators]
+var numInstancesPerReplica [][]int // [numServers][numAccelerators]
+var ratePerReplica [][]float64     // [numServers][numAccelerators]
+var arrivalRates []float64         // [numServers]
 
 var numAcceleratorTypes int
-var unitsAvailByType []int         // [numAcceleratorTypes]
+var unitsAvail []int               // [numAcceleratorTypes]
 var acceleratorTypesMatrix [][]int // [numAcceleratorTypes][numAccelerators]
 
 // create problem instance, solve it, and print results
@@ -25,10 +25,10 @@ func Optimize(problemType core.ProblemType, isLimited bool) {
 	// create a new problem instance
 	switch problemType {
 	case core.SINGLE:
-		p, err = core.CreateSingleAssignProblem(numServers, numAccelerators, unitCost, numUnitsPerReplica,
+		p, err = core.CreateSingleAssignProblem(numServers, numAccelerators, instanceCost, numInstancesPerReplica,
 			ratePerReplica, arrivalRates)
 	case core.MULTI:
-		p, err = core.CreateMultiAssignProblem(numServers, numAccelerators, unitCost, numUnitsPerReplica,
+		p, err = core.CreateMultiAssignProblem(numServers, numAccelerators, instanceCost, numInstancesPerReplica,
 			ratePerReplica, arrivalRates)
 	default:
 		fmt.Printf("Unknown problem type: %s", problemType)
@@ -41,7 +41,7 @@ func Optimize(problemType core.ProblemType, isLimited bool) {
 
 	// set accelerator count limited option
 	if isLimited {
-		if err := p.SetLimited(numAcceleratorTypes, unitsAvailByType, acceleratorTypesMatrix); err != nil {
+		if err := p.SetLimited(numAcceleratorTypes, unitsAvail, acceleratorTypesMatrix); err != nil {
 			fmt.Println(err.Error())
 			return
 		}
@@ -63,12 +63,12 @@ func Optimize(problemType core.ProblemType, isLimited bool) {
 	numReplicas := p.GetNumReplicas()
 	fmt.Println(utils.Pretty2DInt("numReplicas", numReplicas))
 
-	unitsUsed := p.GetUnitsUsed()
-	fmt.Println(utils.Pretty1DInt("unitsUsed", unitsUsed))
+	instancesUsed := p.GetInstancesUsed()
+	fmt.Println(utils.Pretty1DInt("instancesUsed", instancesUsed))
 
 	if isLimited {
-		fmt.Println(utils.Pretty1DInt("unitsAvailByType", unitsAvailByType))
-		unitsUsedByType := p.GetUnitsUsedByType()
-		fmt.Println(utils.Pretty1DInt("unitsUsedByType", unitsUsedByType))
+		fmt.Println(utils.Pretty1DInt("unitsAvail", unitsAvail))
+		unitsUsed := p.GetUnitsUsed()
+		fmt.Println(utils.Pretty1DInt("unitsUsed", unitsUsed))
 	}
 }

@@ -13,9 +13,9 @@ type MultiAssignProblem struct {
 }
 
 // create an instance of the problem
-func CreateMultiAssignProblem(numServers int, numAccelerators int, unitCost []float64, numUnitsPerReplica [][]int,
+func CreateMultiAssignProblem(numServers int, numAccelerators int, instanceCost []float64, numInstancesPerReplica [][]int,
 	ratePerReplica [][]float64, arrivalRates []float64) (*MultiAssignProblem, error) {
-	bp, err := CreateBaseProblem(numServers, numAccelerators, unitCost, numUnitsPerReplica,
+	bp, err := CreateBaseProblem(numServers, numAccelerators, instanceCost, numInstancesPerReplica,
 		ratePerReplica, arrivalRates)
 	if err != nil {
 		return nil, err
@@ -41,7 +41,7 @@ func (p *MultiAssignProblem) Setup() {
 	for i := 0; i < p.numServers; i++ {
 		v0 := i * p.numAccelerators // begin index
 		for j := 0; j < p.numAccelerators; j++ {
-			costVector[v0+j] = float64(p.numUnitsPerReplica[i][j]) * p.unitCost[j]
+			costVector[v0+j] = float64(p.numInstancesPerReplica[i][j]) * p.instanceCost[j]
 		}
 	}
 	p.lp.SetObjFn(costVector)
@@ -72,11 +72,11 @@ func (p *MultiAssignProblem) Setup() {
 				for j := 0; j < p.numAccelerators; j++ {
 					if p.acceleratorTypesMatrix[k][j] == 1 {
 						idx := i*p.numAccelerators + j
-						countVector[idx] = float64(p.numUnitsPerReplica[i][j])
+						countVector[idx] = float64(p.numInstancesPerReplica[i][j])
 					}
 				}
 			}
-			p.lp.AddConstraint(countVector, golp.LE, float64(p.unitsAvailByType[k]))
+			p.lp.AddConstraint(countVector, golp.LE, float64(p.unitsAvail[k]))
 			// fmt.Printf("k=%d; %s; avail=%d\n", k, utils.Pretty1DFloat64("countVector", countVector), p.unitsAvailByType[k])
 		}
 	}
@@ -101,22 +101,22 @@ func (p *MultiAssignProblem) Solve() error {
 
 	// obtain number of replicas and number of used accelerator units
 	p.numReplicas = make([][]int, p.numServers)
-	p.unitsUsed = make([]int, p.numAccelerators)
+	p.instancesUsed = make([]int, p.numAccelerators)
 	for i := 0; i < p.numServers; i++ {
 		p.numReplicas[i] = make([]int, p.numAccelerators)
 		v0 := i * p.numAccelerators // begin index
 		for j := 0; j < p.numAccelerators; j++ {
 			p.numReplicas[i][j] = int(math.Round(vars[v0+j]))
-			p.unitsUsed[j] += p.numReplicas[i][j] * p.numUnitsPerReplica[i][j]
+			p.instancesUsed[j] += p.numReplicas[i][j] * p.numInstancesPerReplica[i][j]
 		}
 	}
 
 	// calculate number of used accelerator units
-	p.unitsUsedByType = make([]int, p.numAcceleratorTypes)
+	p.unitsUsed = make([]int, p.numAcceleratorTypes)
 	for k := 0; k < p.numAcceleratorTypes; k++ {
 		for j := 0; j < p.numAccelerators; j++ {
 			if p.acceleratorTypesMatrix[k][j] == 1 {
-				p.unitsUsedByType[k] += p.unitsUsed[j]
+				p.unitsUsed[k] += p.instancesUsed[j]
 			}
 		}
 	}
