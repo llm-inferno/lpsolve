@@ -70,9 +70,9 @@ func (p *MultiAssignProblem) Setup() {
 			countVector := make([]float64, numVars)
 			for i := 0; i < p.numServers; i++ {
 				for j := 0; j < p.numAccelerators; j++ {
-					if p.acceleratorTypesMatrix[k][j] == 1 {
+					if p.acceleratorTypesMatrix[k][j] > 0 {
 						idx := i*p.numAccelerators + j
-						countVector[idx] = float64(p.numInstancesPerReplica[i][j])
+						countVector[idx] = float64(p.numInstancesPerReplica[i][j] * p.acceleratorTypesMatrix[k][j])
 					}
 				}
 			}
@@ -115,8 +115,8 @@ func (p *MultiAssignProblem) Solve() error {
 	p.unitsUsed = make([]int, p.numAcceleratorTypes)
 	for k := 0; k < p.numAcceleratorTypes; k++ {
 		for j := 0; j < p.numAccelerators; j++ {
-			if p.acceleratorTypesMatrix[k][j] == 1 {
-				p.unitsUsed[k] += p.instancesUsed[j]
+			if p.acceleratorTypesMatrix[k][j] > 0 {
+				p.unitsUsed[k] += p.instancesUsed[j] * p.acceleratorTypesMatrix[k][j]
 			}
 		}
 	}

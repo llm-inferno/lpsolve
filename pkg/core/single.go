@@ -49,7 +49,7 @@ func (p *SingleAssignProblem) Setup() {
 		p.maxNumReplicas[i] = make([]int, p.numAccelerators)
 		for j := 0; j < p.numAccelerators; j++ {
 			if p.ratePerReplica[i][j] > 0 {
-				p.maxNumReplicas[i][j] = int(math.Round(math.Ceil(p.arrivalRates[i] / p.ratePerReplica[i][j])))
+				p.maxNumReplicas[i][j] = int(math.Ceil(p.arrivalRates[i] / p.ratePerReplica[i][j]))
 			} else {
 				excluded[i*p.numAccelerators+j] = 1
 			}
@@ -85,9 +85,9 @@ func (p *SingleAssignProblem) Setup() {
 			countVector := make([]float64, numVars)
 			for i := 0; i < p.numServers; i++ {
 				for j := 0; j < p.numAccelerators; j++ {
-					if p.acceleratorTypesMatrix[k][j] == 1 {
+					if p.acceleratorTypesMatrix[k][j] > 0 {
 						idx := i*p.numAccelerators + j
-						countVector[idx] = float64(p.numInstancesPerReplica[i][j] * p.maxNumReplicas[i][j])
+						countVector[idx] = float64(p.numInstancesPerReplica[i][j] * p.maxNumReplicas[i][j] * p.acceleratorTypesMatrix[k][j])
 					}
 				}
 			}
@@ -130,8 +130,8 @@ func (p *SingleAssignProblem) Solve() error {
 	p.unitsUsed = make([]int, p.numAcceleratorTypes)
 	for k := 0; k < p.numAcceleratorTypes; k++ {
 		for j := 0; j < p.numAccelerators; j++ {
-			if p.acceleratorTypesMatrix[k][j] == 1 {
-				p.unitsUsed[k] += p.instancesUsed[j]
+			if p.acceleratorTypesMatrix[k][j] > 0 {
+				p.unitsUsed[k] += p.instancesUsed[j] * p.acceleratorTypesMatrix[k][j]
 			}
 		}
 	}

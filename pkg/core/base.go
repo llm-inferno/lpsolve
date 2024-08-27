@@ -22,7 +22,7 @@ type BaseProblem struct {
 	instancesUsed    []int   // number of used accelerator instances [numAccelerators]
 
 	numAcceleratorTypes    int
-	acceleratorTypesMatrix [][]int // 0-1 matrix [numAcceleratorTypes][numAccelerators]
+	acceleratorTypesMatrix [][]int // [numAcceleratorTypes][numAccelerators]: number of unit types for an accelerator
 	unitsAvail             []int   // available number of accelerator units [numAcceleratorTypes]
 	unitsUsed              []int   // number of used units of accelerator [numAcceleratorTypes]
 
