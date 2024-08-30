@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.ibm.com/tantawi/lpsolve/pkg/config"
 	"github.ibm.com/tantawi/lpsolve/pkg/core"
 	"github.ibm.com/tantawi/lpsolve/pkg/utils"
 )
@@ -19,15 +20,15 @@ var unitsAvail []int               // [numAcceleratorTypes]
 var acceleratorTypesMatrix [][]int // [numAcceleratorTypes][numAccelerators]
 
 // create problem instance, solve it, and print results
-func Optimize(problemType core.ProblemType, isLimited bool) {
+func Optimize(problemType config.ProblemType, isLimited bool) {
 	var p core.Problem
 	var err error
 	// create a new problem instance
 	switch problemType {
-	case core.SINGLE:
+	case config.SINGLE:
 		p, err = core.CreateSingleAssignProblem(numServers, numAccelerators, instanceCost, numInstancesPerReplica,
 			ratePerReplica, arrivalRates)
-	case core.MULTI:
+	case config.MULTI:
 		p, err = core.CreateMultiAssignProblem(numServers, numAccelerators, instanceCost, numInstancesPerReplica,
 			ratePerReplica, arrivalRates)
 	default:

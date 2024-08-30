@@ -15,6 +15,9 @@ type Problem interface {
 	GetInstancesUsed() []int
 	GetUnitsUsed() []int
 
+	SetSolverTimeout(int)
+	GetSolverTimeout() int
+
 	// pre-solve setup
 	Setup()
 	// solve problem

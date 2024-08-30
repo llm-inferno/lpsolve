@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"os"
 
-	"github.ibm.com/tantawi/lpsolve/pkg/core"
+	"github.ibm.com/tantawi/lpsolve/pkg/config"
 )
 
 func main() {
 	// get problem type argument, or use default
-	problemType := core.SINGLE
+	problemType := config.SINGLE
 	if len(os.Args) > 1 {
-		problemType = core.GetProblemType(os.Args[1])
+		problemType = config.GetProblemType(os.Args[1])
 	}
 
 	numServers = 5
@@ -42,10 +42,10 @@ func main() {
 	// max arrival rate for pairs of server and accelerator
 	//	(numServers x numAccelerators)
 	ratePerReplica = [][]float64{
-		{0.1, 0.2, 0.4, 0.6, 0.0, 1.4, 2.0, 3.2},
-		{0.1, 0.2, 0.4, 0.0, 0.0, 1.4, 2.0, 3.2},
 		{0.1, 0.2, 0.4, 0.6, 0.9, 1.4, 2.0, 3.2},
-		{0.1, 0.2, 0.4, 0.6, 0.0, 0.0, 2.0, 3.2},
+		{0.1, 0.2, 0.4, 0.6, 0.9, 1.4, 2.0, 3.2},
+		{0.1, 0.2, 0.4, 0.6, 0.9, 1.4, 2.0, 3.2},
+		{0.1, 0.2, 0.4, 0.6, 0.9, 1.4, 2.0, 3.2},
 		{0.1, 0.2, 0.4, 0.6, 0.9, 1.4, 2.0, 3.2},
 	}
 

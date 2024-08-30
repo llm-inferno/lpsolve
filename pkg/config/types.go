@@ -1,4 +1,4 @@
-package core
+package config
 
 // the type of optimization problem
 type ProblemType int

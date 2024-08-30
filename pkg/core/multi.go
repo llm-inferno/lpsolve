@@ -2,7 +2,6 @@ package core
 
 import (
 	"math"
-	"time"
 
 	"github.com/draffensperger/golp"
 )
@@ -87,13 +86,13 @@ func (p *MultiAssignProblem) Setup() {
 
 // solve problem
 func (p *MultiAssignProblem) Solve() error {
+	// setup up problem
 	p.Setup()
 
-	//lp.SetVerboseLevel(golp.DETAILED)
-	startTime := time.Now()
-	p.solutionType = p.lp.Solve()
-	endTime := time.Now()
-	p.solutionTimeMsec = endTime.Sub(startTime).Milliseconds()
+	// solve problem with timeout
+	if err := p.solveWithTimeout(); err != nil {
+		return err
+	}
 
 	// extract (optimal) solution
 	p.objectiveValue = p.lp.Objective()

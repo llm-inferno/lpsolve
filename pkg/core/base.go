@@ -1,9 +1,13 @@
 package core
 
 import (
+	"context"
 	"errors"
+	"fmt"
+	"time"
 
 	"github.com/draffensperger/golp"
+	"github.ibm.com/tantawi/lpsolve/pkg/config"
 )
 
 type BaseProblem struct {
@@ -26,7 +30,8 @@ type BaseProblem struct {
 	unitsAvail             []int   // available number of accelerator units [numAcceleratorTypes]
 	unitsUsed              []int   // number of used units of accelerator [numAcceleratorTypes]
 
-	lp *golp.LP // lp_solve problem model
+	lp               *golp.LP // lp_solve problem model
+	solverTimeoutSec int      // override default timeout
 
 	Setup func()       // pre-solve setup
 	Solve func() error // solve problem
@@ -92,4 +97,45 @@ func (p *BaseProblem) GetInstancesUsed() []int {
 
 func (p *BaseProblem) GetUnitsUsed() []int {
 	return p.unitsUsed
+}
+
+func (p *BaseProblem) SetSolverTimeout(t int) {
+	if t > 0 {
+		p.solverTimeoutSec = t
+	}
+}
+
+func (p *BaseProblem) GetSolverTimeout() int {
+	return p.solverTimeoutSec
+}
+
+// solve MILP problem using a timeout
+func (p *BaseProblem) solveWithTimeout() error {
+	startTime := time.Now()
+	var err error
+	var timeoutSec int
+	if p.solverTimeoutSec > 0 {
+		timeoutSec = p.solverTimeoutSec
+	} else {
+		timeoutSec = config.DefaultSolverTimeout
+	}
+	timeout := time.Duration(timeoutSec) * time.Second
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	// solution routine
+	go func() {
+		// p.lp.SetVerboseLevel(golp.DETAILED)
+		p.solutionType = p.lp.Solve()
+		if p.solutionType != golp.OPTIMAL && p.solutionType != golp.SUBOPTIMAL {
+			err = fmt.Errorf("LP solve failed; solutionType=%s", p.solutionType.String())
+		}
+		cancel()
+	}()
+
+	// wait for solve to finish or timeout
+	<-ctx.Done()
+	endTime := time.Now()
+	p.solutionTimeMsec = endTime.Sub(startTime).Milliseconds()
+	return err
 }
