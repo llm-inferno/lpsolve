@@ -54,7 +54,7 @@ func (p *SingleAssignProblem) Setup() {
 			}
 		}
 	}
-	// fmt.Println(utils.Pretty2DInt("maxNumReplicas", p.maxNumReplicas))
+	// fmt.Println(utils.Pretty2D("maxNumReplicas", p.maxNumReplicas))
 
 	// set objective function: cost coefficients
 	costVector := make([]float64, numVars)
@@ -65,7 +65,7 @@ func (p *SingleAssignProblem) Setup() {
 		}
 	}
 	p.lp.SetObjFn(costVector)
-	// fmt.Println(utils.Pretty1DFloat64("costVector", costVector))
+	// fmt.Println(utils.Pretty1D("costVector", costVector))
 
 	// set binary assignment constraints - only one variable set to one per server
 	for i := 0; i < p.numServers; i++ {
@@ -75,7 +75,7 @@ func (p *SingleAssignProblem) Setup() {
 			assignVector[v0+j] = 1
 		}
 		p.lp.AddConstraint(assignVector, golp.EQ, 1)
-		// fmt.Printf("i=%d; %s; tot=%v\n", i, utils.Pretty1DFloat64("assignVector", assignVector), 1)
+		// fmt.Printf("i=%d; %s tot=%v\n", i, utils.Pretty1D("assignVector", assignVector), 1)
 	}
 
 	// set count limit constraints
@@ -91,12 +91,12 @@ func (p *SingleAssignProblem) Setup() {
 				}
 			}
 			p.lp.AddConstraint(countVector, golp.LE, float64(p.unitsAvail[k]))
-			// fmt.Printf("k=%d; %s; avail=%d\n", k, utils.Pretty1DFloat64("countVector", countVector), p.unitsAvailByType[k])
+			// fmt.Printf("k=%d; %s avail=%d\n", k, utils.Pretty1D("countVector", countVector), p.unitsAvail[k])
 		}
 	}
 
 	p.lp.AddConstraint(excluded, golp.EQ, 0)
-	// fmt.Println(utils.Pretty1DFloat64("excluded", excluded))
+	// fmt.Println(utils.Pretty1D("excluded", excluded))
 }
 
 // solve problem

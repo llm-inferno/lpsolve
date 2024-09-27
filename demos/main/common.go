@@ -62,14 +62,14 @@ func Optimize(problemType config.ProblemType, isLimited bool) {
 	fmt.Printf("Objective value: %v\n", p.GetObjectiveValue())
 
 	numReplicas := p.GetNumReplicas()
-	fmt.Println(utils.Pretty2DInt("numReplicas", numReplicas))
+	fmt.Println(utils.Pretty2D("numReplicas", numReplicas))
 
 	instancesUsed := p.GetInstancesUsed()
-	fmt.Println(utils.Pretty1DInt("instancesUsed", instancesUsed))
+	fmt.Println(utils.Pretty1D("instancesUsed", instancesUsed))
 
 	if isLimited {
-		fmt.Println(utils.Pretty1DInt("unitsAvail", unitsAvail))
+		fmt.Println(utils.Pretty1D("unitsAvail", unitsAvail))
 		unitsUsed := p.GetUnitsUsed()
-		fmt.Println(utils.Pretty1DInt("unitsUsed", unitsUsed))
+		fmt.Println(utils.Pretty1D("unitsUsed", unitsUsed))
 	}
 }

@@ -44,7 +44,7 @@ func (p *MultiAssignProblem) Setup() {
 		}
 	}
 	p.lp.SetObjFn(costVector)
-	// fmt.Println(utils.Pretty1DFloat64("costVector", costVector))
+	// fmt.Println(utils.Pretty1D("costVector", costVector))
 
 	// excluded infeasible variables (for a given server accelerator pair)
 	excluded := make([]float64, numVars)
@@ -60,7 +60,7 @@ func (p *MultiAssignProblem) Setup() {
 			}
 		}
 		p.lp.AddConstraint(rateVector, golp.GE, p.arrivalRates[i])
-		// fmt.Printf("i=%d; %s; arrv=%v\n", i, utils.Pretty1DFloat64("rateVector", rateVector), p.arrivalRates[i])
+		// fmt.Printf("i=%d; %s arrv=%v\n", i, utils.Pretty1D("rateVector", rateVector), p.arrivalRates[i])
 	}
 
 	// set count limit constraints
@@ -76,12 +76,12 @@ func (p *MultiAssignProblem) Setup() {
 				}
 			}
 			p.lp.AddConstraint(countVector, golp.LE, float64(p.unitsAvail[k]))
-			// fmt.Printf("k=%d; %s; avail=%d\n", k, utils.Pretty1DFloat64("countVector", countVector), p.unitsAvailByType[k])
+			// fmt.Printf("k=%d; %s avail=%d\n", k, utils.Pretty1D("countVector", countVector), p.unitsAvail[k])
 		}
 	}
 
 	p.lp.AddConstraint(excluded, golp.EQ, 0)
-	// fmt.Println(utils.Pretty1DFloat64("excluded", excluded))
+	// fmt.Println(utils.Pretty1D("excluded", excluded))
 }
 
 // solve problem
