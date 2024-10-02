@@ -31,7 +31,7 @@ func CreateSingleAssignProblem(numServers int, numAccelerators int, instanceCost
 }
 
 // setup constraints and objective function
-func (p *SingleAssignProblem) Setup() {
+func (p *SingleAssignProblem) Setup() error {
 	// define LP problem
 	numVars := p.numServers * p.numAccelerators
 	p.lp = golp.NewLP(0, numVars)
@@ -97,12 +97,16 @@ func (p *SingleAssignProblem) Setup() {
 
 	p.lp.AddConstraint(excluded, golp.EQ, 0)
 	// fmt.Println(utils.Pretty1D("excluded", excluded))
+
+	return nil
 }
 
 // solve problem
 func (p *SingleAssignProblem) Solve() error {
 	// setup up problem
-	p.Setup()
+	if err := p.Setup(); err != nil {
+		return err
+	}
 
 	// solve problem with timeout
 	if err := p.solveWithTimeout(); err != nil {

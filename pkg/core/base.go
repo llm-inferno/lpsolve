@@ -10,6 +10,7 @@ import (
 	"github.ibm.com/tantawi/lpsolve/pkg/config"
 )
 
+// Base optimization problem
 type BaseProblem struct {
 	numServers             int
 	numAccelerators        int
@@ -33,7 +34,7 @@ type BaseProblem struct {
 	lp               *golp.LP // lp_solve problem model
 	solverTimeoutSec int      // override default timeout
 
-	Setup func()       // pre-solve setup
+	Setup func() error // pre-solve setup
 	Solve func() error // solve problem
 }
 
@@ -75,28 +76,8 @@ func (p *BaseProblem) UnSetLimited() {
 	p.isLimited = false
 }
 
-func (p *BaseProblem) GetSolutionType() golp.SolutionType {
-	return p.solutionType
-}
-
-func (p *BaseProblem) GetSolutionTimeMsec() int64 {
-	return p.solutionTimeMsec
-}
-
-func (p *BaseProblem) GetObjectiveValue() float64 {
-	return p.objectiveValue
-}
-
-func (p *BaseProblem) GetNumReplicas() [][]int {
-	return p.numReplicas
-}
-
-func (p *BaseProblem) GetInstancesUsed() []int {
-	return p.instancesUsed
-}
-
-func (p *BaseProblem) GetUnitsUsed() []int {
-	return p.unitsUsed
+func (p *BaseProblem) IsLimited() bool {
+	return p.isLimited
 }
 
 func (p *BaseProblem) SetSolverTimeout(t int) {
@@ -138,4 +119,28 @@ func (p *BaseProblem) solveWithTimeout() error {
 	endTime := time.Now()
 	p.solutionTimeMsec = endTime.Sub(startTime).Milliseconds()
 	return err
+}
+
+func (p *BaseProblem) GetSolutionType() golp.SolutionType {
+	return p.solutionType
+}
+
+func (p *BaseProblem) GetSolutionTimeMsec() int64 {
+	return p.solutionTimeMsec
+}
+
+func (p *BaseProblem) GetObjectiveValue() float64 {
+	return p.objectiveValue
+}
+
+func (p *BaseProblem) GetNumReplicas() [][]int {
+	return p.numReplicas
+}
+
+func (p *BaseProblem) GetInstancesUsed() []int {
+	return p.instancesUsed
+}
+
+func (p *BaseProblem) GetUnitsUsed() []int {
+	return p.unitsUsed
 }

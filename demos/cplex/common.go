@@ -26,10 +26,10 @@ func CreateProblem(problemType config.ProblemType, isLimited bool) (core.Problem
 	// create a new problem instance
 	switch problemType {
 	case config.SINGLE:
-		p, err = core.CreateSingleAssignProblem(numServers, numAccelerators, instanceCost, numInstancesPerReplica,
+		p, err = core.CreateCplexProblem(numServers, numAccelerators, instanceCost, numInstancesPerReplica,
 			ratePerReplica, arrivalRates)
 	case config.MULTI:
-		p, err = core.CreateMultiAssignProblem(numServers, numAccelerators, instanceCost, numInstancesPerReplica,
+		p, err = core.CreateCplexProblem(numServers, numAccelerators, instanceCost, numInstancesPerReplica,
 			ratePerReplica, arrivalRates)
 	default:
 		return nil, fmt.Errorf("unknown problem type: %s", problemType)
@@ -43,10 +43,21 @@ func CreateProblem(problemType config.ProblemType, isLimited bool) (core.Problem
 		if err := p.SetLimited(numAcceleratorTypes, unitsAvail, acceleratorTypesMatrix); err != nil {
 			return nil, err
 		}
+		switch problemType {
+		case config.SINGLE:
+			SetFileNames(p, "single-limited")
+		case config.MULTI:
+			SetFileNames(p, "multi-limited")
+		}
 	} else {
 		p.UnSetLimited()
+		switch problemType {
+		case config.SINGLE:
+			SetFileNames(p, "single-unlimited")
+		case config.MULTI:
+			SetFileNames(p, "multi-unlimited")
+		}
 	}
-
 	return p, nil
 }
 
@@ -67,4 +78,11 @@ func PrintResults(p core.Problem) {
 		unitsUsed := p.GetUnitsUsed()
 		fmt.Println(utils.Pretty1D("unitsUsed", unitsUsed))
 	}
+}
+
+func SetFileNames(p core.Problem, name string) {
+	pc := p.(*core.CplexProblem)
+	pc.SetModelFileName(name + ".mod")
+	pc.SetDataFileName(name + ".dat")
+	pc.SetOutputFileName(name + ".txt")
 }

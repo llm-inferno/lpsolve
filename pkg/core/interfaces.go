@@ -1,25 +1,28 @@
 package core
 
-import "github.com/draffensperger/golp"
+import (
+	"github.com/draffensperger/golp"
+)
 
 // interface to an optimization problem
 type Problem interface {
-	// accelerator types are limited
+	// limiting number of available accelerator types
 	SetLimited(numAcceleratorTypes int, unitsAvail []int, acceleratorTypesMatrix [][]int) error
 	UnSetLimited()
+	IsLimited() bool
 
+	// pre-solve setup
+	Setup() error
+	// solve problem
+	SetSolverTimeout(int)
+	GetSolverTimeout() int
+	Solve() error
+
+	// problem solution
 	GetSolutionType() golp.SolutionType
 	GetSolutionTimeMsec() int64
 	GetObjectiveValue() float64
 	GetNumReplicas() [][]int
 	GetInstancesUsed() []int
 	GetUnitsUsed() []int
-
-	SetSolverTimeout(int)
-	GetSolverTimeout() int
-
-	// pre-solve setup
-	Setup()
-	// solve problem
-	Solve() error
 }
