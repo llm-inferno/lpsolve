@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/draffensperger/golp"
-	"github.ibm.com/tantawi/lpsolve/pkg/config"
+	"github.ibm.com/modeling-analysis/lpsolve/pkg/config"
 )
 
 // Base optimization problem

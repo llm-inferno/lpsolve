@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 
-	"github.ibm.com/tantawi/lpsolve/pkg/config"
-	"github.ibm.com/tantawi/lpsolve/pkg/core"
-	"github.ibm.com/tantawi/lpsolve/pkg/utils"
+	"github.ibm.com/modeling-analysis/lpsolve/pkg/config"
+	"github.ibm.com/modeling-analysis/lpsolve/pkg/core"
+	"github.ibm.com/modeling-analysis/lpsolve/pkg/utils"
 )
 
 var numServers int

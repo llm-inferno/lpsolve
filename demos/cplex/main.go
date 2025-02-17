@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.ibm.com/tantawi/lpsolve/pkg/config"
+	"github.ibm.com/modeling-analysis/lpsolve/pkg/config"
 )
 
 func main() {

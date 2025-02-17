@@ -1,4 +1,4 @@
-module github.ibm.com/tantawi/lpsolve
+module github.ibm.com/modeling-analysis/lpsolve
 
 go 1.23.0
 

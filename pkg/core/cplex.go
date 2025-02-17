@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/draffensperger/golp"
-	"github.ibm.com/tantawi/lpsolve/pkg/utils"
+	"github.ibm.com/modeling-analysis/lpsolve/pkg/utils"
 )
 
 const (
