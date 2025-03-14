@@ -2,4 +2,4 @@ module github.ibm.com/modeling-analysis/lpsolve
 
 go 1.23.0
 
-require github.com/draffensperger/golp v0.0.0-20240729130716-1e42e6000a3a
+require github.com/draffensperger/golp v0.0.0-20241201023928-94a60bf898d2
