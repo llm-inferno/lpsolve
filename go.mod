@@ -1,4 +1,4 @@
-module github.ibm.com/modeling-analysis/lpsolve
+module github.com/llm-inferno/lpsolve
 
 go 1.23.0
 

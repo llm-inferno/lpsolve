@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 
-	"github.ibm.com/modeling-analysis/lpsolve/pkg/config"
-	"github.ibm.com/modeling-analysis/lpsolve/pkg/core"
-	"github.ibm.com/modeling-analysis/lpsolve/pkg/utils"
+	"github.com/llm-inferno/lpsolve/pkg/config"
+	"github.com/llm-inferno/lpsolve/pkg/core"
+	"github.com/llm-inferno/lpsolve/pkg/utils"
 )
 
 var numServers int
