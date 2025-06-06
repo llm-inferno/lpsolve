@@ -9,8 +9,9 @@ import (
 	"strings"
 	"time"
 
+	"lpsolve/pkg/utils"
+
 	"github.com/draffensperger/golp"
-	"github.com/llm-inferno/lpsolve/pkg/utils"
 )
 
 const (

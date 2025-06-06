@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 
-	"github.com/llm-inferno/lpsolve/pkg/config"
-	"github.com/llm-inferno/lpsolve/pkg/core"
-	"github.com/llm-inferno/lpsolve/pkg/utils"
+	"lpsolve/pkg/config"
+	"lpsolve/pkg/core"
+	"lpsolve/pkg/utils"
 )
 
 var numServers int
