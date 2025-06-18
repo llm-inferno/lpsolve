@@ -6,9 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"lpsolve/pkg/config"
-
 	"github.com/draffensperger/golp"
+	"github.com/llm-inferno/lpsolve/pkg/config"
 )
 
 // Base optimization problem

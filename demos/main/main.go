@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"lpsolve/pkg/config"
+	"github.com/llm-inferno/lpsolve/pkg/config"
 )
 
 func main() {
