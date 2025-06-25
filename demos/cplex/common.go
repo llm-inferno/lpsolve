@@ -25,8 +25,7 @@ func CreateProblem(problemType config.ProblemType, isLimited bool) (core.Problem
 	var err error
 	// create a new problem instance
 	switch problemType {
-	case config.SINGLE:
-	case config.MULTI:
+	case config.SINGLE, config.MULTI:
 		p, err = core.CreateCplexProblem(numServers, numAccelerators, instanceCost, numInstancesPerReplica,
 			ratePerReplica, arrivalRates)
 	default:

@@ -60,6 +60,7 @@ func main() {
 	fmt.Println("---------------------------")
 	if p, err := CreateProblem(problemType, false); err != nil || p.Solve() != nil {
 		fmt.Println(err)
+		return
 	} else {
 		PrintResults(p)
 	}
@@ -70,6 +71,7 @@ func main() {
 	fmt.Println("-------------------------")
 	if p, err := CreateProblem(problemType, true); err != nil || p.Solve() != nil {
 		fmt.Println(err)
+		return
 	} else {
 		PrintResults(p)
 	}
